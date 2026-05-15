@@ -451,7 +451,7 @@ function App() {
                   className="flex items-center justify-center gap-4 mb-12"
                 >
                   <div className="bg-white/10 backdrop-blur-md px-6 py-3 rounded-2xl shadow-xl border border-white/20">
-                    <span className="block text-3xl font-bold text-romantic-pink">{daysTogether}</span>
+                    <span className="block text-4xl font-bold text-romantic-pink leading-none">∞</span>
                     <span className="text-sm text-white uppercase tracking-widest">Days of Love</span>
                   </div>
                   <div className="text-romantic-pink animate-bounce">
