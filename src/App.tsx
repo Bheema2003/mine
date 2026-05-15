@@ -2,36 +2,41 @@ import { motion, AnimatePresence, useInView } from 'framer-motion';
 import { Heart, Stars, Camera, Video, Calendar, Music, MailOpen, Clock, Lock, User, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
-const VideoItem = ({ video, index }: { video: string; index: number }) => {
+const VideoItem = ({ 
+  video, 
+  index, 
+  activeVideoIndex, 
+  setActiveVideoIndex 
+}: { 
+  video: string; 
+  index: number;
+  activeVideoIndex: number | null;
+  setActiveVideoIndex: (index: number | null) => void;
+}) => {
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
-  const isInView = useInView(videoRef, { amount: 0.6 });
+  const isPlaying = activeVideoIndex === index;
 
   useEffect(() => {
     if (videoRef.current) {
-      if (isInView) {
-        videoRef.current.play().catch(err => console.log("Auto-play blocked", err));
-        setIsPlaying(true);
+      if (isPlaying) {
+        videoRef.current.play().catch(err => console.log("Playback blocked", err));
       } else {
         videoRef.current.pause();
-        setIsPlaying(false);
       }
     }
-  }, [isInView]);
+  }, [isPlaying]);
 
-  const togglePlay = () => {
-    if (videoRef.current) {
-      if (isPlaying) {
-        videoRef.current.pause();
-      } else {
-        videoRef.current.play();
-      }
-      setIsPlaying(!isPlaying);
+  const handleTogglePlay = () => {
+    if (isPlaying) {
+      setActiveVideoIndex(null);
+    } else {
+      setActiveVideoIndex(index);
     }
   };
 
-  const toggleMute = () => {
+  const toggleMute = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering play/pause
     if (videoRef.current) {
       videoRef.current.muted = !isMuted;
       setIsMuted(!isMuted);
@@ -50,7 +55,8 @@ const VideoItem = ({ video, index }: { video: string; index: number }) => {
         filter: "brightness(1.05)"
       }}
       transition={{ type: "spring", stiffness: 200, damping: 25 }}
-      className="relative group overflow-hidden rounded-[2rem]"
+      className="relative group overflow-hidden rounded-[2rem] cursor-pointer"
+      onClick={handleTogglePlay}
     >
       <div className="bg-gray-900 shadow-xl overflow-hidden relative transform-gpu transition-all duration-500 group-hover:shadow-pink-200/30">
         <video 
@@ -59,17 +65,14 @@ const VideoItem = ({ video, index }: { video: string; index: number }) => {
           loop 
           muted={isMuted}
           playsInline
-          className="w-full h-auto max-h-[70vh] object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
+          className="w-full h-auto max-h-[60vh] object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
         />
         
         {/* Custom Controls Overlay */}
         <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6 pointer-events-none group-hover:pointer-events-auto">
-          <button 
-            onClick={togglePlay}
-            className="p-4 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/40 transition-all transform hover:scale-110"
-          >
+          <div className="p-4 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/40 transition-all transform hover:scale-110">
             {isPlaying ? <Pause className="text-white w-8 h-8" /> : <Play className="text-white w-8 h-8 fill-white" />}
-          </button>
+          </div>
           <button 
             onClick={toggleMute}
             className="p-4 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/40 transition-all transform hover:scale-110"
@@ -96,6 +99,7 @@ const VideoItem = ({ video, index }: { video: string; index: number }) => {
 
 function App() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [activeVideoIndex, setActiveVideoIndex] = useState<number | null>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -575,22 +579,28 @@ function App() {
           </div>
           
           <motion.div 
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-100px" }}
-                  variants={{
-                    hidden: { opacity: 0 },
-                    visible: {
-                      opacity: 1,
-                      transition: { staggerChildren: 0.15 }
-                    }
-                  }}
-                  className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                >
-                  {allVideos.map((video, i) => (
-                    <VideoItem key={i} video={video} index={i} />
-                  ))}
-                </motion.div>
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true, margin: "-100px" }}
+                    variants={{
+                      hidden: { opacity: 0 },
+                      visible: {
+                        opacity: 1,
+                        transition: { staggerChildren: 0.15 }
+                      }
+                    }}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                  >
+                    {allVideos.map((video, i) => (
+                      <VideoItem 
+                        key={i} 
+                        video={video} 
+                        index={i} 
+                        activeVideoIndex={activeVideoIndex}
+                        setActiveVideoIndex={setActiveVideoIndex}
+                      />
+                    ))}
+                  </motion.div>
         </div>
       </section>
 
