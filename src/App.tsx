@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, useInView } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Heart, Stars, Camera, Video, Calendar, Music, MailOpen, Clock, Lock, User, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
@@ -105,7 +105,7 @@ function App() {
   const [error, setError] = useState('');
   const [hearts, setHearts] = useState<{ id: number; x: number; y: number; size: number }[]>([]);
   const [sparkles, setSparkles] = useState<{ id: number; x: number; y: number; delay: number }[]>([]);
-  const [daysTogether, setDaysTogether] = useState(0);
+  const [, setDaysTogether] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
 
   const handleLogin = (e: React.FormEvent) => {
