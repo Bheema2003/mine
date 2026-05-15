@@ -1,20 +1,42 @@
 import { motion, AnimatePresence, useInView } from 'framer-motion';
-import { Heart, Stars, Camera, Video, Calendar, Music, MailOpen, Clock, Lock, User } from 'lucide-react';
+import { Heart, Stars, Camera, Video, Calendar, Music, MailOpen, Clock, Lock, User, Play, Pause, Volume2, VolumeX } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 
 const VideoItem = ({ video, index }: { video: string; index: number }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const isInView = useInView(videoRef, { amount: 0.6 });
 
   useEffect(() => {
     if (videoRef.current) {
       if (isInView) {
         videoRef.current.play().catch(err => console.log("Auto-play blocked", err));
+        setIsPlaying(true);
       } else {
         videoRef.current.pause();
+        setIsPlaying(false);
       }
     }
   }, [isInView]);
+
+  const togglePlay = () => {
+    if (videoRef.current) {
+      if (isPlaying) {
+        videoRef.current.pause();
+      } else {
+        videoRef.current.play();
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  const toggleMute = () => {
+    if (videoRef.current) {
+      videoRef.current.muted = !isMuted;
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
     <motion.div
@@ -35,13 +57,28 @@ const VideoItem = ({ video, index }: { video: string; index: number }) => {
           ref={videoRef}
           src={`/memories/${video}`} 
           loop 
-          muted
+          muted={isMuted}
           playsInline
-          controls
           className="w-full h-auto max-h-[70vh] object-contain mx-auto transition-transform duration-700 group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
-        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-500 pointer-events-none">
+        
+        {/* Custom Controls Overlay */}
+        <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-6 pointer-events-none group-hover:pointer-events-auto">
+          <button 
+            onClick={togglePlay}
+            className="p-4 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/40 transition-all transform hover:scale-110"
+          >
+            {isPlaying ? <Pause className="text-white w-8 h-8" /> : <Play className="text-white w-8 h-8 fill-white" />}
+          </button>
+          <button 
+            onClick={toggleMute}
+            className="p-4 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/40 transition-all transform hover:scale-110"
+          >
+            {isMuted ? <VolumeX className="text-white w-8 h-8" /> : <Volume2 className="text-white w-8 h-8" />}
+          </button>
+        </div>
+
+        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-10 transition-all duration-500 pointer-events-none">
           <motion.div
             animate={{ scale: [1, 1.2, 1], rotate: [0, 10, -10, 0] }}
             transition={{ duration: 2, repeat: Infinity }}
